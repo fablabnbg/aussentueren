@@ -22,6 +22,7 @@ class gpio:
 		if not os.path.exists(self.devname):
 			with open('/sys/class/gpio/export','w') as f:
 				f.write(str(num))
+		time.sleep(0.5)
 
 		with open(os.path.join(self.devname,'active_low'),'w') as f:
 			f.write(str(int(active_low)))
@@ -38,6 +39,7 @@ class gpio:
 		self.direction=direction
 		with open(os.path.join(self.devname,'direction'),'w') as f:
 			f.write(self.direction)
+			time.sleep(0.1)
 
 	def set_interrupt(self,int_type):
 		"""Set edge on which 'wait' will return.

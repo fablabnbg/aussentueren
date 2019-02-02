@@ -25,7 +25,7 @@ def card_on_door(ident,sak):
 	beep_door.confirm()
 	mqtt.send('card_shown_outside',{'card':ident,'sak':sak.decode('utf8')})
 
-def card_on_exit(ident):
+def card_on_exit(ident,sak):
 	ident=ident.decode('utf8')
 	logging.info('Card at inside reader "{}"'.format(ident))
 	beep_exit.confirm()
@@ -59,7 +59,7 @@ keypad.start()
 
 reader_door=NFCreader.NFCreader(dev=config.outside_reader_dev,on_card=card_on_door)
 #reader_exit=NFCreader.NFCreader(dev='/dev/ttyS3',on_card=card_on_exit)
-reader_exit=NFCreader.NFCreader_stub(dev=config.inside_reader_dev,on_card=card_on_exit)
+reader_exit=NFCreader.NFCreader(dev=config.inside_reader_dev,on_card=card_on_exit)
 beep_door=beeper.Beeper(reader_door.beep)
 beep_exit=beeper.Beeper(reader_exit.beep)
 
