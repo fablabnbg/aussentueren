@@ -20,7 +20,7 @@ class Mqtt:
 	def on_connect(self,client, userdata, flags, rc):
 		client.subscribe("doors/{}/#".format(self.name))
 
-	def on_message(self, userdata, message):
+	def on_message(self,client, userdata, message):
 		try:
 			data=json.loads(message.payload.decode('utf8'))
 			payload=data['payload']
