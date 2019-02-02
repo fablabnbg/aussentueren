@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+import lock_ctrl
+from  IOctrl import gpio
+from lock_behaviour import Lock_behaviour
+from edge_detect import Edge_detect
+import NFCreader
+from door import Door
+import datetime
+import config
+from keypad import Keypad
+from identity_store import Identity_store
+import pin
+import beeper
+from interpreter import Interpreter
+from mqtt import Mqtt
+import hmac
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+def card_on_door(ident,sak):
+	ident=ident.decode('utf8')
+	logging.info('Card at outside reader "{}"'.format(ident))
+	keypad.flush()
+	if door.is_closed:
+		ident_store.uid=ident
+	beep_door.confirm()
+	mqtt.send('card_shown_outside',{'card':ident,'sak':sak.decode('utf8')})
+
+def card_on_exit(ident):
+	ident=ident.decode('utf8')
+	logging.info('Card at inside reader "{}"'.format(ident))
+	beep_exit.confirm()
+	mqtt.send('card_shown_inside',{'card':ident,'sak':sak.decode('utf8')})
+
+def on_door_open():
+	ident_store.uid=None
+	mqtt.send('opened','')
+
+def on_key(buf):
+	print(buf)
+	beep_door.running=False
+	beep_door.keypress()
+	uid=ident_store.uid
+	if not uid:
+		return
+	if pin.is_pin(buf):
+		mqtt.send('pin_entered',{'card':uid,'pin':buf})
+	pin_change=pin.is_pin_change(buf)
+	if pin_change:
+		old_pin=pin_change['oldpin']
+		new_pin=pin_change['newpin']
+		mqtt.send('change_pin',{'card':uid,'old_pin':old_pin,'new_pin':new_pin})
+
+ident_store=Identity_store()
+door=Door(gpio(config.gpio_door_sensor),open_callback=on_door_open)
+lock_control=lock_ctrl.Lock_ctrl(IO_latch=gpio(config.gpio_electric_strike))
+
+keypad=Keypad(dev=config.keypad_dev,on_key=on_key)
+keypad.start()
+
+reader_door=NFCreader.NFCreader(dev=config.outside_reader_dev,on_card=card_on_door)
+#reader_exit=NFCreader.NFCreader(dev='/dev/ttyS3',on_card=card_on_exit)
+reader_exit=NFCreader.NFCreader_stub(dev=config.inside_reader_dev,on_card=card_on_exit)
+beep_door=beeper.Beeper(reader_door.beep)
+beep_exit=beeper.Beeper(reader_exit.beep)
+
+interpreter=Interpreter(opener=lock_control.latch,beeper_inside=beep_exit.beep,beeper_outside=beep_door.beep)
+hmac_calculator=hmac.new(config.hmac_key,digestmod='sha512')
+mqtt=Mqtt(addr=config.mqtt_broker,name=config.door_name,hmac=hmac_calculator,interpreter=interpreter)
+
+reader_exit.start()
+reader_door.start()
+logging.info('Started at {}'.format(datetime.datetime.now().isoformat()))
