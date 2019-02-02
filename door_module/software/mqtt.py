@@ -2,7 +2,7 @@ from logging import warn
 import json
 import datetime
 import paho.mqtt.client as mqtt_client
-import hmac
+from hmac import compare_digest
 class Mqtt:
 	def __init__(self,addr,name,hmac,interpreter):
 		self.hmac=hmac.copy()
@@ -28,7 +28,7 @@ class Mqtt:
 		except:
 			return # Ignore messages that are not valid json or don't contain payload and hmac
 		expected_hmac=calculate_hmac(self.hmac.copy(),payload)
-		if not hmac.compare_digests(expected_hmac,hmac):
+		if not hmac.compare_digest(expected_hmac,hmac):
 			logging.warn('invalid HMAC "{}" for message "{}".format(hmac,payload)')
 			return
 		try:
@@ -61,6 +61,6 @@ def check_datetime(isotime):
 		time=datetime.datetime.fromisoformat(isotime)
 	except:
 		return False # Time could not be converted to datetime object
-	now=datetime.datetime.now(datetime.timezone.utc).isoformat()
+	now=datetime.datetime.now(datetime.timezone.utc)
 	delta=now-time
 	return abs(delta.total_seconds())<60
