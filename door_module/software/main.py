@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import lock_ctrl
 from  IOctrl import gpio
-from lock_behaviour import Lock_behaviour
-from edge_detect import Edge_detect
 import NFCreader
 from door import Door
 import datetime
