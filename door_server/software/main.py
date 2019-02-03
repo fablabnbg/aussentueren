@@ -2,7 +2,8 @@ import hmac
 import logging
 
 import config
-from mqtt import Mqtt, Validator
+from mqtt import Mqtt
+from validator import Validator
 from interpreter import Interpreter
 from status import StatusManager
 
