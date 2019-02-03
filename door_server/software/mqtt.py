@@ -5,7 +5,6 @@ import paho.mqtt.client as mqtt_client
 from hmac import compare_digest
 
 def log(*args):
-	pass
 	print(args)
 
 class Mqtt:
@@ -15,7 +14,7 @@ class Mqtt:
 		self.client=mqtt_client.Client()
 		self.client.on_connect=self.on_connect
 		self.client.on_message=self.on_message
-		self.client.on_log=log
+		#self.client.on_log=log
 		self.client.connect_async(addr)
 
 	def start(self):
