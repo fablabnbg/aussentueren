@@ -1,5 +1,4 @@
-import threading
-import time
+from logging import warn
 from datetime import datetime
 
 class Beeper:
@@ -14,6 +13,11 @@ class Beeper:
 				}
 
 	def beep_by_style(self,style):
+		print("beep ",style)
+		tune=self.tunes.get(style,None)
+		if tune is None:
+			warn('Invalid style: "{}"'.format(style))
+			return
 		self.beep(bytearray(self.tunes[style]))
 
 	def confirm(self):
