@@ -11,6 +11,7 @@ import pin
 import beeper
 from interpreter import Interpreter
 from mqtt import Mqtt
+from common.validator import Validator
 import hmac
 import logging
 
@@ -75,7 +76,8 @@ beep_exit=beeper.Beeper(reader_exit.beep)
 
 interpreter=Interpreter(opener=lock_control.latch,beeper_inside=beep_exit.beep_by_style,beeper_outside=beep_door.beep_by_style)
 hmac_calculator=hmac.new(config.hmac_key,digestmod='sha512')
-mqtt=Mqtt(addr=config.mqtt_broker,name=config.door_name,hmac=hmac_calculator,interpreter=interpreter)
+validator=Validator(hmac_calculator)
+mqtt=Mqtt(addr=config.mqtt_broker,name=config.door_name,validator=validator,interpreter=interpreter)
 
 reader_exit.start()
 reader_door.start()
