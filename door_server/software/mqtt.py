@@ -30,7 +30,7 @@ class Mqtt:
 
 	def on_message(self,client, userdata, message):
 		_,door_name,request=message.topic.split('/')
-		payload_data,error=validator.check(message)
+		payload_data,error=self.validator.check(message)
 		if not error is None:
 			warn(error)
 			return
