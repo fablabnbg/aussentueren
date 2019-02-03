@@ -58,7 +58,6 @@ class NFCreader(threading.Thread):
 				if checksum!=int(chk,16):
 					logging.warn("Checksum Error for card {} {} {}. expected {}".format(sak,uid,chk,hex(checksum)))
 					return
-				logging.info("Card: {}".format(uid))
 				self.callback(uid,sak)
 		except Exception as e:
 			pass

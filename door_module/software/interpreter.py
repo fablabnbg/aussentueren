@@ -12,9 +12,9 @@ class Interpreter:
 		elif command['type']=='beep':
 			style=command['beepstyle']
 			if command['location']=='inside':
-				beeper_inside(style)
+				self.beeper_inside(style)
 			elif command['location']=='outside':
-				beeper_outside(style)
+				self.beeper_outside(style)
 			else:
-				beeper_inside(style)
-				beeper_outside(style)
+				self.beeper_inside(style)
+				self.beeper_outside(style)
