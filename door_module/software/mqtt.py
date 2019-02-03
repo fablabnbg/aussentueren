@@ -46,7 +46,7 @@ class Mqtt:
 			return
 		self.interpreter.do(payload_data['command'])
 
-	def send(self,subtopic,data):
+	def send(self,subtopic,data,retain=False):
 		topic="doors/{}/{}".format(self.name,subtopic)
 		payload=dict()
 		payload['datetime']=datetime.datetime.now(datetime.timezone.utc).isoformat()
@@ -55,7 +55,7 @@ class Mqtt:
 		message=dict()
 		message['payload']=payload_json
 		message['hmac']=calculate_hmac(self.hmac.copy(),message['payload'])
-		self.client.publish(topic,json.dumps(message))
+		self.client.publish(topic,json.dumps(message),retain=retain)
 
 def calculate_hmac(hmac,payload):
 	hmac.update(payload.encode('utf8'))
