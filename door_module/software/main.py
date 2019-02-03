@@ -14,6 +14,9 @@ from mqtt import Mqtt
 import hmac
 import logging
 
+from backports.datetime_fromisoformat import MonkeyPatch
+MonkeyPatch.patch_fromisoformat()
+
 logging.basicConfig(level=logging.DEBUG)
 
 def card_on_door(ident,sak):
@@ -33,7 +36,11 @@ def card_on_exit(ident,sak):
 
 def on_door_open():
 	ident_store.uid=None
-	mqtt.send('opened','')
+	mqtt.send('open',{'status',True})
+
+def on_door_close():
+	ident_store.uid=None
+	mqtt.send('open',{'status',False})
 
 def on_key(buf):
 	print(buf)
@@ -51,7 +58,7 @@ def on_key(buf):
 		mqtt.send('change_pin',{'card':uid,'old_pin':old_pin,'new_pin':new_pin})
 
 ident_store=Identity_store()
-door=Door(gpio(config.gpio_door_sensor),open_callback=on_door_open)
+door=Door(gpio(config.gpio_door_sensor),open_callback=on_door_open,close_callback=on_door_close)
 lock_control=lock_ctrl.Lock_ctrl(IO_latch=gpio(config.gpio_electric_strike))
 
 keypad=Keypad(dev=config.keypad_dev,on_key=on_key)

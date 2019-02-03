@@ -3,6 +3,10 @@ import json
 import datetime
 import paho.mqtt.client as mqtt_client
 from hmac import compare_digest
+
+def log(*args):
+	print(args)
+
 class Mqtt:
 	def __init__(self,addr,name,hmac,interpreter):
 		self.hmac=hmac.copy()
@@ -11,6 +15,7 @@ class Mqtt:
 		self.client=mqtt_client.Client()
 		self.client.on_connect=self.on_connect
 		self.client.on_message=self.on_message
+		self.client.on_log=log
 		self.client.connect_async(addr)
 		self.client.loop_start()
 
@@ -18,7 +23,7 @@ class Mqtt:
 		self.client.loop_stop()
 		
 	def on_connect(self,client, userdata, flags, rc):
-		client.subscribe("doors/{}/#".format(self.name))
+		client.subscribe("doors/{}/command".format(self.name))
 
 	def on_message(self,client, userdata, message):
 		try:
@@ -28,16 +33,16 @@ class Mqtt:
 		except:
 			return # Ignore messages that are not valid json or don't contain payload and hmac
 		expected_hmac=calculate_hmac(self.hmac.copy(),payload)
-		if not hmac.compare_digest(expected_hmac,hmac):
-			logging.warn('invalid HMAC "{}" for message "{}".format(hmac,payload)')
+		if not compare_digest(expected_hmac,hmac):
+			warn('invalid HMAC "{}" for message "{}"'.format(hmac,payload))
 			return
 		try:
 			payload_data=json.loads(payload)
 		except:
-			logging.warn('invalid payload "{}".format(payload)')
+			warn('invalid payload "{}"'.format(payload))
 			return # Ignore non JSON payloads
 		if not check_datetime(payload_data['datetime']):
-			logging.warn('invalid datetime "{}" for message "{}".format(datetime,payload)')
+			warn('invalid datetime "{}" for message "{}"'.format(payload_data['datetime'],payload))
 			return
 		self.interpreter.do(payload_data['command'])
 
@@ -59,7 +64,8 @@ def calculate_hmac(hmac,payload):
 def check_datetime(isotime):
 	try:
 		time=datetime.datetime.fromisoformat(isotime)
-	except:
+	except Exception as e:
+		print('Unable to convert time',isotime)
 		return False # Time could not be converted to datetime object
 	now=datetime.datetime.now(datetime.timezone.utc)
 	delta=now-time
