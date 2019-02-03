@@ -39,5 +39,5 @@ class Mqtt:
 		payload_json=json.dumps(payload)
 		message=dict()
 		message['payload']=payload_json
-		message['hmac']=calculate_hmac(self.hmac.copy(),message['payload'])
+		message['hmac']=self.validator.calculate_hmac(message['payload'])
 		self.client.publish(topic,json.dumps(message),retain=retain)

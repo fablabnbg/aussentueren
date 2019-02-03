@@ -12,7 +12,7 @@ class Validator:
 			hmac=data['hmac']
 		except:
 			return (None,'Invalid json format "{}"'.format(data))
-		expected_hmac=calculate_hmac(self.hmac.copy(),payload)
+		expected_hmac=calculate_hmac(payload)
 		if not compare_digest(expected_hmac,hmac):
 			return (None,'invalid HMAC "{}" for message "{}"'.format(hmac,payload))
 		try:
@@ -23,9 +23,10 @@ class Validator:
 			return (None,'invalid datetime "{}" for message "{}"'.format(datetime,payload))
 		return (payload_data,None)
 
-def calculate_hmac(hmac,payload):
-	hmac.update(payload.encode('utf8'))
-	return hmac.hexdigest()
+	def calculate_hmac(self,payload):
+		hmac=self.hmac.copy()
+		hmac.update(payload.encode('utf8'))
+		return hmac.hexdigest()
 
 def check_datetime(isotime):
 	try:
