@@ -11,8 +11,9 @@ class Validator:
 			payload=data['payload']
 			hmac=data['hmac']
 		except:
-			return (None,'Invalid json format "{}"'.format(data))
-		expected_hmac=calculate_hmac(payload)
+			raise
+			return (None,'Invalid json format "{}"'.format(message))
+		expected_hmac=self.calculate_hmac(payload)
 		if not compare_digest(expected_hmac,hmac):
 			return (None,'invalid HMAC "{}" for message "{}"'.format(hmac,payload))
 		try:
