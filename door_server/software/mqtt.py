@@ -7,9 +7,31 @@ from hmac import compare_digest
 def log(*args):
 	print(args)
 
-class Mqtt:
-	def __init__(self,addr,hmac,interpreter):
+class Validator:
+	def __init__(self,hmac):
 		self.hmac=hmac.copy()
+
+	def check(self,message):
+		try:
+			data=json.loads(message.decode('utf8'))
+			payload=data['payload']
+			hmac=data['hmac']
+		except:
+			return (None,'Invalid json format "{}"'.format(data))
+		expected_hmac=calculate_hmac(self.hmac.copy(),payload)
+		if not compare_digest(expected_hmac,hmac):
+			return (None,'invalid HMAC "{}" for message "{}"'.format(hmac,payload))
+		try:
+			payload_data=json.loads(payload)
+		except:
+			return (None,'invalid payload "{}"'.format(payload))
+		if not check_datetime(payload_data['datetime']):
+			return (None,'invalid datetime "{}" for message "{}"'.format(datetime,payload))
+		return (payload_data,None)
+
+class Mqtt:
+	def __init__(self,addr,validator,interpreter):
+		self.validator=validator
 		self.interpreter=interpreter
 		self.client=mqtt_client.Client()
 		self.client.on_connect=self.on_connect
@@ -31,23 +53,9 @@ class Mqtt:
 
 	def on_message(self,client, userdata, message):
 		_,door_name,request=message.topic.split('/')
-		try:
-			data=json.loads(message.payload.decode('utf8'))
-			payload=data['payload']
-			hmac=data['hmac']
-		except:
-			return # Ignore messages that are not valid json or don't contain payload and hmac
-		expected_hmac=calculate_hmac(self.hmac.copy(),payload)
-		if not compare_digest(expected_hmac,hmac):
-			logging.warn('invalid HMAC "{}" for message "{}".format(hmac,payload)')
-			return
-		try:
-			payload_data=json.loads(payload)
-		except:
-			logging.warn('invalid payload "{}".format(payload)')
-			return # Ignore non JSON payloads
-		if not check_datetime(payload_data['datetime']):
-			logging.warn('invalid datetime "{}" for message "{}".format(datetime,payload)')
+		payload_data,error=validator.check(message)
+		if not error is None:
+			warn(error)
 			return
 		self.interpreter.do(door_name,request,payload_data['data'])
 
