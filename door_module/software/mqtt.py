@@ -33,11 +33,15 @@ class Mqtt:
 
 	def send(self,subtopic,data,retain=False):
 		topic="doors/{}/{}".format(self.name,subtopic)
+		message=prepare_message(self.validator.calculate_hmac,data)
+		self.client.publish(topic,message,retain=retain)
+
+def prepare_message(hmac_calculator,data):
 		payload=dict()
 		payload['datetime']=datetime.datetime.now(datetime.timezone.utc).isoformat()
 		payload['data']=data
 		payload_json=json.dumps(payload)
 		message=dict()
 		message['payload']=payload_json
-		message['hmac']=self.validator.calculate_hmac(message['payload'])
-		self.client.publish(topic,json.dumps(message),retain=retain)
+		message['hmac']=hmac_calculator(message['payload'])
+		return json.dumps(message)
