@@ -6,6 +6,7 @@ class Keypad(threading.Thread):
 		super().__init__(*args,**kwargs)
 		self.s=serial.Serial(dev,9600)
 		self.on_key=on_key
+		self.lock=threading.RLock()
 		self.flush()
 
 	def run(self):
@@ -13,9 +14,11 @@ class Keypad(threading.Thread):
 			c=self.s.read(1).decode('ascii')
 			if len(self.buffer)>100:
 				self.flush()
-			self.buffer+=c
+			with self.lock:
+				self.buffer+=c
 			self.on_key(self.buffer)
 
 	def flush(self):
-		self.buffer=""
+		with self.lock:
+			self.buffer=""
 
