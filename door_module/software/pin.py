@@ -1,6 +1,4 @@
 import re
-import json
-from urllib.request import urlopen, HTTPError
 
 PIN_LENGTH=4
 
