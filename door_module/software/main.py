@@ -14,6 +14,7 @@ from mqtt import Mqtt
 from common.validator import Validator
 import hmac
 import logging
+import serial
 
 from backports.datetime_fromisoformat import MonkeyPatch
 MonkeyPatch.patch_fromisoformat()
@@ -65,7 +66,7 @@ ident_store=Identity_store()
 door=Door(gpio(config.gpio_door_sensor),open_callback=on_door_open,close_callback=on_door_close)
 lock_control=lock_ctrl.Lock_ctrl(IO_latch=gpio(config.gpio_electric_strike))
 
-keypad=Keypad(dev=config.keypad_dev,on_key=on_key)
+keypad=Keypad(dev=serial.Serial(config.keypad_dev,9600),on_key=on_key)
 keypad.start()
 
 reader_door=NFCreader.NFCreader(dev=config.outside_reader_dev,on_card=card_on_door)

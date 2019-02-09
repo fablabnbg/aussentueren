@@ -1,10 +1,9 @@
 import threading
-import serial
 
 class Keypad(threading.Thread):
 	def __init__(self,dev,on_key,*args,**kwargs):
 		super().__init__(*args,**kwargs)
-		self.s=serial.Serial(dev,9600)
+		self.s=dev
 		self.on_key=on_key
 		self.lock=threading.RLock()
 		self.flush()
