@@ -1,7 +1,7 @@
 import unittest
 import datetime
 
-import validator
+import common.validator as validator
 
 class Mock_hmac:
 	def __init__(self):
