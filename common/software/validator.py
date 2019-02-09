@@ -11,17 +11,16 @@ class Validator:
 			payload=data['payload']
 			hmac=data['hmac']
 		except:
-			raise
 			return (None,'Invalid json format "{}"'.format(message))
 		expected_hmac=self.calculate_hmac(payload)
 		if not compare_digest(expected_hmac,hmac):
-			return (None,'invalid HMAC "{}" for message "{}"'.format(hmac,payload))
+			return (None,'Invalid HMAC "{}" for message "{}". Expected "{}"'.format(hmac,payload,expected_hmac))
 		try:
 			payload_data=json.loads(payload)
 		except:
-			return (None,'invalid payload "{}"'.format(payload))
-		if not check_datetime(payload_data['datetime']):
-			return (None,'invalid datetime "{}" for message "{}"'.format(datetime,payload))
+			return (None,'Invalid payload "{}"'.format(payload))
+		if not check_datetime(payload_data.get('datetime','')):
+			return (None,'Invalid datetime "{}" for message "{}"'.format(datetime,payload))
 		return (payload_data,None)
 
 	def calculate_hmac(self,payload):
@@ -29,11 +28,16 @@ class Validator:
 		hmac.update(payload.encode('utf8'))
 		return hmac.hexdigest()
 
+GRACE_PERIOD=60
+
 def check_datetime(isotime):
 	try:
 		time=datetime.datetime.fromisoformat(isotime)
 	except:
 		return False # Time could not be converted to datetime object
 	now=datetime.datetime.now(datetime.timezone.utc)
-	delta=now-time
-	return abs(delta.total_seconds())<60
+	try:
+		delta=now-time
+	except TypeError:
+		return False # time has no timezone
+	return abs(delta.total_seconds())<GRACE_PERIOD
