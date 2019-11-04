@@ -7,7 +7,7 @@ class Validator:
 
 	def check(self,message):
 		try:
-			data=json.loads(message.decode('utf8'))
+			data=json.loads(message.payload.decode('utf8'))
 			payload=data['payload']
 			hmac=data['hmac']
 		except:
