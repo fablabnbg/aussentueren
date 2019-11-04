@@ -1,0 +1,9 @@
+[Unit]
+Description=Door management server
+
+[Service]
+Type=simple
+ExecStart=/opt/aussentueren/door_server/software/main.py
+
+[Install]
+WantedBy=network-online.target

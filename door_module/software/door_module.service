@@ -1,0 +1,9 @@
+[Unit]
+Description=Door hardware control module
+
+[Service]
+Type=simple
+ExecStart=/opt/aussentueren/door_module/software/main.py
+
+[Install]
+WantedBy=network-online.target
