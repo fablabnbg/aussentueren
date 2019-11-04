@@ -1,3 +1,13 @@
+#!/usr/bin/env python3
+import sys
+version=sys.version_info
+if version.major<3:
+	raise RuntimeError("Need python 3")
+if version.minor<7:
+	from backports.datetime_fromisoformat import MonkeyPatch
+	MonkeyPatch.patch_fromisoformat()
+
+
 import hmac
 import logging
 
