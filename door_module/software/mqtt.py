@@ -1,4 +1,4 @@
-from logging import warn
+from logging import warn,info
 import json
 import datetime
 import paho.mqtt.client as mqtt_client
@@ -11,7 +11,7 @@ class Mqtt:
 		self.validator=validator
 		self.name=name
 		self.interpreter=interpreter
-		self.client=mqtt_client.Client()
+		self.client=mqtt_client.Client(client_id=name)
 		self.client.on_connect=self.on_connect
 		self.client.on_message=self.on_message
 		#self.client.on_log=log
@@ -22,9 +22,14 @@ class Mqtt:
 		self.client.loop_stop()
 		
 	def on_connect(self,client, userdata, flags, rc):
+		info("MQTT connected")
 		client.subscribe("doors/{}/command".format(self.name))
+		client.subscribe("doors/status".format(self.name))
 
 	def on_message(self,client, userdata, message):
+		topic=message.topic
+		if topic=="doors/status":
+			return self.interpreter.do_status(message.payload)
 		payload_data,error=self.validator.check(message)
 		if not error is None:
 			warn(error)

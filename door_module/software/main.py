@@ -63,18 +63,17 @@ def on_key(buf):
 
 ident_store=Identity_store()
 door=Door(gpio(config.gpio_door_sensor),open_callback=on_door_open,close_callback=on_door_close)
-lock_control=lock_ctrl.Lock_ctrl(IO_latch=gpio(config.gpio_electric_strike))
+lock_control=lock_ctrl.Lock_ctrl(IO_latch=gpio(config.gpio_electric_strike),IO_closer=gpio(config.gpio_door_closer))
 
 keypad=Keypad(dev=serial.Serial(config.keypad_dev,9600),on_key=on_key)
 keypad.start()
 
 reader_door=NFCreader.NFCreader(dev=config.outside_reader_dev,on_card=card_on_door)
-#reader_exit=NFCreader.NFCreader(dev='/dev/ttyS3',on_card=card_on_exit)
 reader_exit=NFCreader.NFCreader(dev=config.inside_reader_dev,on_card=card_on_exit)
 beep_door=beeper.Beeper(reader_door.beep)
 beep_exit=beeper.Beeper(reader_exit.beep)
 
-interpreter=Interpreter(opener=lock_control.latch,beeper_inside=beep_exit.beep_by_style,beeper_outside=beep_door.beep_by_style)
+interpreter=Interpreter(opener=lock_control.latch,public=lock_control.public,beeper_inside=beep_exit.beep_by_style,beeper_outside=beep_door.beep_by_style)
 hmac_calculator=hmac.new(config.hmac_key,digestmod='sha512')
 validator=Validator(hmac_calculator)
 mqtt=Mqtt(addr=config.mqtt_broker,name=config.door_name,validator=validator,interpreter=interpreter)
