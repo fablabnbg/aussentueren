@@ -1,4 +1,5 @@
 from datetime import datetime
+from parameters import max_delay_card_pin_seconds
 
 class Identity_store:
 	def __init__(self):
@@ -8,7 +9,7 @@ class Identity_store:
 	
 	@property
 	def uid(self):
-		if (datetime.now()-self._last_time).seconds>90:
+		if (datetime.now()-self._last_time).seconds>max_delay_card_pin_seconds:
 			self._uid=None
 		return self._uid
 
@@ -19,7 +20,7 @@ class Identity_store:
 
 	@property
 	def sak(self):
-		if (datetime.now()-self._last_time).seconds>90:
+		if (datetime.now()-self._last_time).seconds>max_delay_card_pin_seconds:
 			self._sak=None
 		return self._sak
 

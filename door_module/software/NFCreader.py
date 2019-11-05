@@ -2,6 +2,7 @@ import threading
 import serial
 import time
 import logging
+import parameters
 from datetime import datetime
 
 class NFCreader_stub:
@@ -62,9 +63,9 @@ class NFCreader(threading.Thread):
 					logging.warn("Checksum Error for card {} {} {}. expected {}".format(sak,uid,chk,hex(checksum)))
 					return
 				now=datetime.now()
-				if (now-self.last_time).seconds<0.5: # Ratelimit NFC Cards to max 2 per second
+				if (now-self.last_time).seconds<1/parameters.max_cards_per_second: # Ratelimit NFC Cards to max 2 per second
 					return
-				if (datetime.now()-self.last_time).seconds>2: # Accept same card again after 2 seconds
+				if (datetime.now()-self.last_time).seconds>parameters.same_card_delay_seconds: # Accept same card again after 2 seconds
 					self.last_uid=None
 				if uid==self.last_uid: #ignore repeated reads of the same card
 					return
