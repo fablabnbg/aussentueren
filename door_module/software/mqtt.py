@@ -1,4 +1,4 @@
-from logging import warn
+from logging import warn,info
 import json
 import datetime
 import paho.mqtt.client as mqtt_client
@@ -22,6 +22,7 @@ class Mqtt:
 		self.client.loop_stop()
 		
 	def on_connect(self,client, userdata, flags, rc):
+		info("MQTT connected")
 		client.subscribe("doors/{}/command".format(self.name))
 
 	def on_message(self,client, userdata, message):
