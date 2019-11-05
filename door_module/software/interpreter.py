@@ -1,9 +1,9 @@
 from logging import warn
 
 class Interpreter:
-	def __init__(self, opener, closer, beeper_outside,beeper_inside):
+	def __init__(self, opener, public, beeper_outside,beeper_inside):
 		self.opener=opener
-		self.closer=closer
+		self.public=public
 		self.beeper_inside=beeper_inside
 		self.beeper_outside=beeper_outside
 
@@ -11,7 +11,7 @@ class Interpreter:
 		if command['type']=='open':
 			self.opener()
 		elif command['type']=='close':
-			self.closer()
+			self.public(False)
 		elif command['type']=='beep':
 			style=command['beepstyle']
 			if command['location']=='inside':
@@ -21,3 +21,8 @@ class Interpreter:
 			else:
 				self.beeper_inside(style)
 				self.beeper_outside(style)
+
+	def do_status(self,status):
+		self.public(status==b"public")
+
+

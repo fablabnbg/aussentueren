@@ -23,9 +23,9 @@ class Lock_ctrl:
 		"""open the latch."""
 		info('latch')
 		self.latcher.tap(3)
-		self.closer.set(0)
 
-	def close(self):
-		"""activate closer."""
-		info('close')
-		self.closer.set(1)
+	def public(self,state):
+		"""keep door opened."""
+		info('public {}'.format(state))
+		self.closer.set(int(not state))
+		self.latcher.set(int(state))
