@@ -38,9 +38,13 @@ def alarm_door(door_name,reason):
 	style=reason2style[reason]
 	mqtt.send(door_name,{'type':'beep','beepstyle':style[1],'location':style[0]})
 
+def publish_status(status):
+	print("publish status",status)
+	mqtt.simple_send("doors/status",status,retain=True)
+
 hmac_calculator=hmac.new(config.hmac_key,digestmod='sha512')
 validator=Validator(hmac_calculator)
-status=StatusManager()
+status=StatusManager(on_change=publish_status)
 interpreter=Interpreter(status_manager=status,open_door=open_door,close_door=close_door,alarm_door=alarm_door)
 mqtt=Mqtt(addr=config.mqtt_broker,validator=validator,interpreter=interpreter)
 mqtt.start()

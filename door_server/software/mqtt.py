@@ -27,8 +27,12 @@ class Mqtt:
 		self.client.subscribe("doors/+/open")
 		self.client.subscribe("doors/+/card_shown_outside")
 		self.client.subscribe("doors/+/card_shown_inside")
+		self.client.subscribe("doors/status/public")
 
 	def on_message(self,client, userdata, message):
+		print(message.payload)
+		if message.topic=="doors/status/public":
+			return self.interpreter.do_public(message.payload)
 		_,door_name,request=message.topic.split('/')
 		payload_data,error=self.validator.check(message)
 		if not error is None:
@@ -40,6 +44,9 @@ class Mqtt:
 		topic="doors/{}/command".format(doorname)
 		message=prepare_message(self.validator.calculate_hmac,data)
 		self.client.publish(topic,message)
+
+	def simple_send(self,topic,message,retain=False):
+		self.client.publish(topic,message,retain=retain)
 
 def prepare_message(hmac_calculator,data):
 		payload=dict()
