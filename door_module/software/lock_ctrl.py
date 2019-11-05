@@ -1,5 +1,6 @@
 import threading
 import time
+from logging import info
 
 class Lock_ctrl:
 	"""The Lock_ctrl class manages the door lock.
@@ -16,5 +17,5 @@ class Lock_ctrl:
 
 	def latch(self):
 		"""open the latch."""
-		print('latch')
+		info('latch')
 		self.latcher.tap(3)

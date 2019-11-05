@@ -1,4 +1,4 @@
-from logging import warn
+from logging import warn,info
 from datetime import datetime
 
 class Beeper:
@@ -13,7 +13,7 @@ class Beeper:
 				}
 
 	def beep_by_style(self,style):
-		print("beep ",style)
+		info("beep {}".format(style))
 		tune=self.tunes.get(style,None)
 		if tune is None:
 			warn('Invalid style: "{}"'.format(style))

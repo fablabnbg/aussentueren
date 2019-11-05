@@ -40,14 +40,13 @@ def card_on_exit(ident,sak):
 
 def on_door_open():
 	ident_store.uid=None
-	mqtt.send('open',{'status',True},retain=True)
+	mqtt.send('open',{'status':True},retain=True)
 
 def on_door_close():
 	ident_store.uid=None
-	mqtt.send('open',{'status',False},retain=True)
+	mqtt.send('open',{'status':False},retain=True)
 
 def on_key(buf):
-	print(buf)
 	beep_door.running=False
 	beep_door.keypress()
 	uid=ident_store.uid
