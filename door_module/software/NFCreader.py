@@ -2,6 +2,7 @@ import threading
 import serial
 import time
 import logging
+from datetime import datetime
 
 class NFCreader_stub:
     def __init__(self,*args,**kwargs):
@@ -27,6 +28,8 @@ class NFCreader(threading.Thread):
 		self.callback=on_card
 		self.s=serial.Serial(dev,9600,timeout=0)
 		self.beepcmd=b''
+		self.last_uid=None
+		self.last_time=datetime.now()
 
 	def run(self):
 		"""Executed on new thread by "start"."""
@@ -58,6 +61,15 @@ class NFCreader(threading.Thread):
 				if checksum!=int(chk,16):
 					logging.warn("Checksum Error for card {} {} {}. expected {}".format(sak,uid,chk,hex(checksum)))
 					return
+				now=datetime.now()
+				if (now-self.last_time).seconds<0.5: # Ratelimit NFC Cards to max 2 per second
+					return
+				if (datetime.now()-self.last_time).seconds>2: # Accept same card again after 2 seconds
+					self.last_uid=None
+				if uid==self.last_uid: #ignore repeated reads of the same card
+					return
+				self.last_uid=uid
+				self.last_time=datetime.now()
 				self.callback(uid,sak)
 		except Exception as e:
 			pass
