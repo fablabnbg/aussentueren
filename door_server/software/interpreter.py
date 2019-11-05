@@ -18,7 +18,8 @@ class Interpreter:
 		if request=="card_shown_inside":
 			self.close(door_name,data)
 		elif request=="card_shown_outside":
-			self.open(door_name,data)
+			if not self.status_manager.public: # Ignore card if public mode
+				self.open(door_name,data)
 		elif request=="change_pin":
 			self.change_pin(door_name,data)
 
