@@ -19,6 +19,10 @@ from status import StatusManager
 
 logging.basicConfig(level=logging.DEBUG)
 
+def close_door(door_name):
+	print('close',door_name)
+	mqtt.send(door_name,{'type':'close'})
+
 def open_door(door_name):
 	print('open',door_name)
 	mqtt.send(door_name,{'type':'open'})
@@ -37,7 +41,7 @@ def alarm_door(door_name,reason):
 hmac_calculator=hmac.new(config.hmac_key,digestmod='sha512')
 validator=Validator(hmac_calculator)
 status=StatusManager()
-interpreter=Interpreter(status_manager=status,open_door=open_door,alarm_door=alarm_door)
+interpreter=Interpreter(status_manager=status,open_door=open_door,close_door=close_door,alarm_door=alarm_door)
 mqtt=Mqtt(addr=config.mqtt_broker,validator=validator,interpreter=interpreter)
 mqtt.start()
 

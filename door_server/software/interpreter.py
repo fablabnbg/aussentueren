@@ -8,9 +8,10 @@ from datetime import date
 #import threading
 
 class Interpreter:
-	def __init__(self,status_manager,open_door,alarm_door):
+	def __init__(self,status_manager,open_door,close_door,alarm_door):
 		self.status_manager=status_manager
 		self.open_door=open_door
+		self.close_door=close_door
 		self.alarm_door=alarm_door
 
 	def do(self,door_name,request,data):
@@ -50,6 +51,10 @@ class Interpreter:
 		s=db.create_session(config.db)
 		s.add(r)
 		s.commit()
+		doors=s.query(db.Door).all()
+		for d in doors:
+			self.close_door(d.name)
+
 
 	def change_pin(self,door_name,data):
 		card_uid=data.get('card','')
