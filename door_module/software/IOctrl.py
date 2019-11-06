@@ -18,6 +18,7 @@ class gpio:
 	direction : 'in' or 'out'
 	"""
 	def __init__(self,num,direction=None,active_low=False):
+		self.tap_active=False
 		self.devname='/sys/class/gpio/gpio'+str(num)
 		if not os.path.exists(self.devname):
 			with open('/sys/class/gpio/export','w') as f:
@@ -56,6 +57,9 @@ class gpio:
 		value : either 1 or 0
 		change : set to one to automatically change direction to 'out'
 		"""
+		if self.tap_active:
+			return
+
 		if not self.direction=='out':
 			if change:
 				self.direction('out')
@@ -74,7 +78,9 @@ class gpio:
 		"""
 		def runthread():
 			self.set(1)
+			self.tap_active=True
 			time.sleep(duration)
+			self.tap_active=False
 			self.set(0)
 		threading.Thread(target=runthread).start()
 

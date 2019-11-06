@@ -3,9 +3,9 @@ import re
 PIN_LENGTH=4
 
 def is_pin(buf):
-	if not len(buf)==PIN_LENGTH:
+	if not (len(buf)==PIN_LENGTH or len(buf)==PIN_LENGTH+1):
 		return False
-	if re.match('\d{{{}}}'.format(PIN_LENGTH),buf):
+	if re.match('#?\d{{{}}}'.format(PIN_LENGTH),buf):
 		return True
 	return False
 
