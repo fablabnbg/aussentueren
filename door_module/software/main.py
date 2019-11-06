@@ -53,7 +53,9 @@ def on_key(buf):
 	sak=ident_store.sak
 	if not uid:
 		return
+	print(buf)
 	if pin.is_pin(buf):
+		print('is pin')
 		mqtt.send('card_shown_outside',{'card':uid,'sak':sak,'pin':buf})
 	pin_change=pin.is_pin_change(buf)
 	if pin_change:
