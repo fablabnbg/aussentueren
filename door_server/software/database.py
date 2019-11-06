@@ -12,22 +12,13 @@ class Card(Base):
 	__tablename__='cards'
 	uid=Column(String(14),primary_key=True)
 	pin=Column(String(4))
-	access_level=Column(Integer)
 	owner=Column(String(64),nullable=True)
 	member_id=Column(String(5))
 	expiry_date=Column(Date)
-
-	def obj(self):
-		return {
-				'uid':self.uid,
-				'access_level':self.access_level,
-				'owner':self.owner,
-				'member_id':self.member_id,
-				'expiry_date':str(self.expiry_date),
-				}
-
-	def __str__(self):
-		return str(self.obj())
+	allow_unlock=Column(Boolean,default=False,nullable=False)
+	allow_entry=Column(Boolean,default=False,nullable=False)
+	allow_sneaky=Column(Boolean,default=False,nullable=False)
+	always_sneaky=Column(Boolean,default=False,nullable=False)
 
 class Door(Base):
 	__tablename__='doors'

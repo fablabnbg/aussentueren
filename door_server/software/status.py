@@ -3,14 +3,18 @@ class StatusManager:
 		self.on_change=on_change
 		self._open=False
 		self._public=False
+		self._occupied=False
+
+	def publish(self):
+		self.on_change(self)
 
 	@property
 	def status(self):
 		if not self.open:
-			return 'closed'
+			return 'locked'
 		if self.public:
 			return 'public'
-		return 'open'
+		return 'unlocked'
 
 	@property
 	def open(self):
@@ -20,7 +24,17 @@ class StatusManager:
 	def open(self,status):
 		if self._open!=status:
 			self._open=status
-			self.on_change(self.status)
+			self.on_change(self)
+
+	@property
+	def occupied(self):
+		return self._occupied
+
+	@occupied.setter
+	def occupied(self,status):
+		if self._occupied!=status:
+			self._occupied=status
+			self.on_change(self)
 
 	@property
 	def public(self):
@@ -28,9 +42,8 @@ class StatusManager:
 
 	@public.setter
 	def public(self,status):
-		print(status)
-		if not self.open:
+		if not self.occupied:
 			return
 		if self._public!=status:
 			self._public=status
-			self.on_change(self.status)
+			self.on_change(self)

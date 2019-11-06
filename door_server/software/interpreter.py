@@ -24,7 +24,7 @@ class Interpreter:
 			self.change_pin(door_name,data)
 
 	def do_public(self,status):
-		self.status_manager.public=status==b"true"
+		self.status_manager.public=status.decode().upper()=="TRUE"
 
 	def open(self,door_name,data):
 		card_uid=data.get('card','')
@@ -34,14 +34,22 @@ class Interpreter:
 			card=s.query(db.Card).filter(db.Card.uid==card_uid.upper()).one()
 		except exc.NoResultFound:
 			return self.fail_open(s,card_uid,door_name)
-		if card.access_level<5 or card.expiry_date<date.today():
+		if not card.allow_entry or card.expiry_date<date.today():
 			return self.fail_open(s,card_uid,door_name)
 		if self.status_manager.open:
 			return self.grant_open(s,card_uid,door_name)
-		if card.access_level>=10:
+		if card.allow_unlock:
 			pin=data.get('pin','no pin')
+			sneaky=False
+			if pin.startswith('#'):
+				sneaky=True
+				pin=pin[1:]
+			if not card.allow_sneaky:
+				sneaky=False
+			if card.always_sneaky:
+				sneaky=True
 			if card.pin==pin:
-				return self.grant_open(s,card_uid,door_name)
+				return self.grant_open(s,card_uid,door_name,sneaky)
 			else:
 				self.alarm_door(door_name,'pin')
 				return
@@ -50,14 +58,13 @@ class Interpreter:
 	def close(self,door_name,data):
 		card_uid=data.get('card','')
 		self.status_manager.open=False
+		self.status_manager.occupied=False
+		self.status_manager.public=False
 		self.alarm_door(door_name,'close')
 		r=db.Request_Success(card_uid=card_uid,req_type='close',door_name=door_name)
 		s=db.create_session(config.db)
 		s.add(r)
 		s.commit()
-		doors=s.query(db.Door).all()
-		for d in doors:
-			self.close_door(d.name)
 
 
 	def change_pin(self,door_name,data):
@@ -78,12 +85,14 @@ class Interpreter:
 		s.commit()
 		self.alarm_door(door_name,'pin_changed')
 
-	def grant_open(self,session,card_uid,door):
+	def grant_open(self,session,card_uid,door,sneaky=False):
 		r=db.Request_Success(card_uid=card_uid,req_type='open',door_name=door)
 		session.add(r)
 		session.commit()
 		self.open_door(door)
-		self.status_manager.open=True
+		is_open=self.status_manager.open or not sneaky
+		self.status_manager.open=is_open
+		self.status_manager.occupied=True
 
 	def fail_open(self,session,card_uid,door):
 		r=db.Request_Failure(card_uid=card_uid,req_type='open',door_name=door)

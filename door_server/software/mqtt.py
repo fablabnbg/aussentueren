@@ -7,9 +7,10 @@ def log(*args):
 	print(args)
 
 class Mqtt:
-	def __init__(self,addr,validator,interpreter):
+	def __init__(self,addr,validator,interpreter,status_manager):
 		self.validator=validator
 		self.interpreter=interpreter
+		self.status_manager=status_manager
 		self.client=mqtt_client.Client()
 		self.client.on_connect=self.on_connect
 		self.client.on_message=self.on_message
@@ -24,14 +25,16 @@ class Mqtt:
 		
 	def on_connect(self,client, userdata, flags, rc):
 		print('Mqtt connected',rc)
+		self.client.will_set("status/doorserver/lwt","offline",qos=1,retain=True)
+		self.client.publish("status/doorserver/lwt","online",qos=1,retain=True)
+		self.status_manager.publish()
 		self.client.subscribe("doors/+/open")
 		self.client.subscribe("doors/+/card_shown_outside")
 		self.client.subscribe("doors/+/card_shown_inside")
-		self.client.subscribe("doors/status/public")
+		self.client.subscribe("status/doorserver/public/set")
 
 	def on_message(self,client, userdata, message):
-		print(message.payload)
-		if message.topic=="doors/status/public":
+		if message.topic=="status/doorserver/public/set":
 			return self.interpreter.do_public(message.payload)
 		_,door_name,request=message.topic.split('/')
 		payload_data,error=self.validator.check(message)
