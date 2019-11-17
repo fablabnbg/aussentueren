@@ -10,10 +10,10 @@ class StatusManager:
 
 	@property
 	def status(self):
-		if not self.open:
-			return 'locked'
 		if self.public:
 			return 'public'
+		if not self.open:
+			return 'locked'
 		return 'unlocked'
 
 	@property
@@ -24,6 +24,9 @@ class StatusManager:
 	def open(self,status):
 		if self._open!=status:
 			self._open=status
+			if not status:
+				self._occupied=False
+				self._public=False
 			self.on_change(self)
 
 	@property
@@ -34,6 +37,9 @@ class StatusManager:
 	def occupied(self,status):
 		if self._occupied!=status:
 			self._occupied=status
+			if not status:
+				self._open=False
+				self._public=False
 			self.on_change(self)
 
 	@property
