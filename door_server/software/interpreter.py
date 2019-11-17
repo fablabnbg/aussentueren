@@ -78,7 +78,7 @@ class Interpreter:
 			self.alarm_door(door_name,'deny')
 		if card.pin!=old_pin:
 			self.alarm_door(door_name,'deny')
-		if len(new_pin)!=len(pin):
+		if len(new_pin)!=len(old_pin):
 			self.alarm_door(door_name,'deny')
 		card.pin=new_pin
 		s.merge(card)

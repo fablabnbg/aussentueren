@@ -31,6 +31,7 @@ class Mqtt:
 		self.client.subscribe("doors/+/open")
 		self.client.subscribe("doors/+/card_shown_outside")
 		self.client.subscribe("doors/+/card_shown_inside")
+		self.client.subscribe("doors/+/change_pin")
 		self.client.subscribe("status/doorserver/public/set")
 
 	def on_message(self,client, userdata, message):
