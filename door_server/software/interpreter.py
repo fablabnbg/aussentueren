@@ -34,10 +34,12 @@ class Interpreter:
 			card=s.query(db.Card).filter(db.Card.uid==card_uid.upper()).one()
 		except exc.NoResultFound:
 			return self.fail_open(s,card_uid,door_name)
-		if not card.allow_entry or card.expiry_date<date.today():
+		if not card.allow_entry:
 			return self.fail_open(s,card_uid,door_name)
 		if self.status_manager.open:
 			return self.grant_open(s,card_uid,door_name)
+		if card.expiry_date is None or card.expiry_date<date.today():
+			return self.fail_open(s,card_uid,door_name)
 		if card.allow_unlock:
 			pin=data.get('pin','no pin')
 			sneaky=False
